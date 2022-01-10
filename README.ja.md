@@ -73,21 +73,37 @@ const OPEN_BY_APP = true
 
 ![ShareIntegration](ShareForIntegration-J.png)
 
-## How to use
+## データベース id の取得
 
-Any application that allows text selection can be used.
-After you selected some text, press the shortcut key for NotionCodeBlockQuickAction.
-Then, type the language for the selected text.
-If you don't input any text or input an illegal language,
-DEFAULT_LANGUAGE is used for the language for the selected text.
+最後に DATABASE_ID を取得します。許可したデータベースをページで表示した状態で、メニューから「リンクをコピー」をクリックします。
 
-After you press the return key or press the `CONTINUE` button, a code block is appended to the most recent page in the database in a few seconds and is displayed in Notion.app or your default browser.
+![リンクをコピー](CopyLink-J.png)
+
+コピーしたリンクは以下の形式になっています。この 32 桁の XXXX... の部分がデータベース ID になります。この部分だけを取り出して、ワークシートの DATABASE_ID に設定してください。
+
+```text
+https://www.notion.so/hkob/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX?v=YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+```
+
+## 使い方
+
+テキストを選択できサービスを利用できるアプリであれば、このサービスは利用可能です。
+(例: VSCode はテキストサービスを利用できないようです。こちらは [VSCode の機能拡張](https://github.com/hkob/code-block-to-notion)の方を利用ください。
+
+テキストを選択後にショートカットキーをタイプすると、言語選択画面が出てきます。
+一覧に表示されるものが利用可能ですので、表示してあるもののいずれかをタイプしてください。
+もし、未設定の場合や一覧に存在しない言語を設定した場合には、DEFAULT_LANGUAGE に設定したものが自動設定されます。
+デフォルトでは shell になっています。自分のよく使うものに変更しておいてください。
+
+言語を設定すると、もっとも最近編集したページの一番下に code block が登録されます。
+その後、Notion アプリか、デフォルトのブラウザでページが表示されます。
+Notion アプリで表示したい人は OPEN_BY_APP を true に、ブラウザで表示したい人は false に設定してください。
 
 ![movie](NotionCodeBlockQuickAction.gif)
 
 - [blog in Japanese](https://hkob.hatenablog.com/entry/2022/01/10/133000)
 
-## Change Log
+## 更新履歴
 
 - Ver. 1.0
-  - First release
+  - 最初のリリース
