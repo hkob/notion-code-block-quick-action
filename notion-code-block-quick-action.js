@@ -1,8 +1,6 @@
 // ########## Personal settings ##########
-// Set your Notion API Token (strings that starts with `secret_`)
+// Set your Notion API Token (strings that starts with `ntn_` or `secret_`)
 const NOTION_API_TOKEN = "secret_XXXXXXXXXXXXXXXXXXXXXXXX"
-// Set your database ID (32-digits hex number)
-const DATABASE_ID = "YYYYYYYYYYYYYYYYYYYYYYYYYYY"
 // Set default language
 const DEFAULT_LANGUAGE = "shell"
 // If you want to open a new task by Notion.app, set true.  If you want to open it by your default browser, set false.
@@ -34,28 +32,26 @@ function dialogText(app, input) {
 function sendNotion(app, url, payload, method) {
   const header = " --header 'Authorization: Bearer '" + NOTION_API_TOKEN + "'' "  +
     "--header 'Content-Type: application/json' " +
-    "--header 'Notion-Version: 2021-08-16' " +
+    "--header 'Notion-Version: 2022-06-28' " +
     "--data '"
-  const script = "curl -X " + method + " " + url + header + JSON.stringify(payload).replaceAll("'", '\'"\'"\'') + "'"
+  const script = "curl -X " + method + " " + url + header + payload.replaceAll("'", '\'"\'"\'') + "'"
   return JSON.parse(app.doShellScript(script))
 }
 
-function getNotionPages(app, payload, databaseId) {
-  const url = "https://api.notion.com/v1/databases/" + databaseId + "/query"
+function getNotionPages(app, payload) {
+  const url = "https://api.notion.com/v1/search"
   return sendNotion(app, url, payload, "POST")
 }
 
-function getLastEditedPage(app, databaseId) {
+function getLastEditedPage(app) {
   const payload = {
-    sorts: [
-      {
-        timestamp: "last_edited_time",
-        direction: "descending"
-      }
-    ],
+    sort: {
+      timestamp: "last_edited_time",
+      direction: "descending"
+    },
     page_size: 1
   }
-  return getNotionPages(app, payload, databaseId)
+  return getNotionPages(app, JSON.stringify(payload))
 }
 
 function appendBlockChildren(app, pageId, payload) {
@@ -66,26 +62,23 @@ function appendBlockChildren(app, pageId, payload) {
 function appendCodeBlock(app, page, code, language) {
   if (page) {
     const pageId = page.id
+    let texts = []
+    for (let i = 0; i < code.length; i+=1990) {
+      texts.push({type: "text", text: {content: code.slice(i, i+1990)}})
+    }
     const payload = {
       children: [
         {
           type: "code",
           object: "block",
           code: {
-            text: [
-              {
-                type: "text",
-                text: {
-                  content: code
-                }
-              }
-            ],
+            rich_text: texts,
             language: language
           }
         }
       ]
     }
-    const result = appendBlockChildren(app, pageId, payload)
+    const result = appendBlockChildren(app, pageId, JSON.stringify(payload))
     return result.url
   } else {
     return null
@@ -105,7 +98,7 @@ function run(input, parameters) {
       if (languages.indexOf(language) == -1) {
         language = "shell"
       }
-      const lastEditedPage = getLastEditedPage(app, DATABASE_ID).results[0]
+      const lastEditedPage = getLastEditedPage(app).results[0]
       appendCodeBlock(app, lastEditedPage, inputStr, language)
       var url = lastEditedPage.url
       if (OPEN_BY_APP == true) {

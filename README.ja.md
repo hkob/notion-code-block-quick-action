@@ -1,11 +1,11 @@
 # notion-code-block-quick-action
 
-NotionCodeBlockQuickAction.workflow は選択したテキストを codeblock として、Notion のページに追加してくれる macOS サービスです。ページは指定したデータベースのうち、もっとも最近更新したものが選ばれます。
+NotionCodeBlockQuickAction.workflow は選択したテキストを codeblock として、Notion のページに追加してくれる macOS サービスです。追加先はインテグレーションを設定したページのうち、もっとも最近更新したものが選ばれます。
 
 ## インストール方法
 
 - 以下のリンクから NotionCodeBlockQuickAction.workflow をダウンロードします。
-[https://github.com/hkob/notion-code-block-quick-action/releases/download/1.0/NotionCodeBlockQuickAction.workflow.zip]
+[https://github.com/hkob/notion-code-block-quick-action/releases/download/1.1/NotionCodeBlockQuickAction.workflow.zip]
 
 - zip ファイルのままの場合には展開します。
 - workflow を実行します。
@@ -28,16 +28,12 @@ open $HOME/Library/Services/NotionCodeBlockQuickAction.workflow
 
 ![Install](Automator-J.png)
 
-- Rewrite some values
-
-- 先頭部分に以下の 4 つの設定項目が変数で定義されています。自分のものに合わせて中身を修正してください。なお、NOTION_API_TOKEN や DATABASE_ID についてわからない人は、下の NOTION API の設定を先に実施してから、値を設定してください。
+- 先頭部分に以下の 3 つの設定項目が変数で定義されています。自分のものに合わせて中身を修正してください。なお、NOTION_API_TOKEN についてわからない人は、下の NOTION API の設定を先に実施してから、値を設定してください。
 
 ```Javascript
 // ########## Personal settings ##########
 // Notion API Token を設定します (`secret_` で始まる文字列です)。
 const NOTION_API_TOKEN = "secret_XXXXXXXXXXXXXXXXXXXXXXXX"
-// 登録するタスクデータベースの ID を設定します (32桁の16進数です)。
-const DATABASE_ID = "YYYYYYYYYYYYYYYYYYYYYYYYYYY"
 // デフォルトの言語
 const DEFAULT_LANGUAGE = "shell"
 // 登録後にページが開きます。Notion.app で開きたい人は true にしてください。false にするとデフォルトブラウザで開きます。
@@ -49,41 +45,28 @@ const OPEN_BY_APP = true
 初めての人のために、Notion API の設定方法も説明しておきます。
 
 - 最初に Notion の設定を開き、インテグレーションタブを開きます。
-![インテグレーション画面](Integration-J.png)
+![コネクト画面](Connections-J.png)
 
-- 次に「独自のインテグレーションを開始する」をクリックします。以下のような画面になるので、「新しいインテグレーション」をクリックします。
-![私のインテグレーション](myIntegration-J.png)
+- 次に「インテグレーションを作成または管理する」をクリックします。以下のような画面になるので、「新しいインテグレーション」をクリックします。
+![インテグレーション](myIntegration-J.png)
 
-- 上の部分の名前、画像は好きなものを設定してください。ワークスペースは自動的に設定されているはずです。複数のワークスペースを持っている人は利用するワークスペースを選択してください。
+- 「インテグレーション名を追加」の部分の名前を設定し、ワークスペースを複数持っている人は利用するワークスペースを選択してください。画像は好きなものを設定してください。なくても問題ありません。ここで保存をするとインテグレーションが作成されます。
 ![新しいインテグレーション](newIntegration0-J.png)
 
-- コンテンツ機能は今回すべてチェックします。ユーザに関する情報は必要ないので、ユーザー情報なしでよいです。
-![新しいインテグレーション](newIntegration1-J.png)
+- 以前は、機能は保存前に設定していましたが、最近は保存後に設定するようになりました。コンテンツ機能は今回すべてチェックします(デフォルトでこうなっています)。ユーザに関する情報は必要ないので、ユーザー情報なしでよいです。
+![追加されたインテグレーション](newIntegration1-J.png)
 
-- 送信をクリックすると画面が変わり、上にシークレットが表示されます。「表示」をクリックすると `secret_` で始まる文字列が表示されます。右にあるコピーをクリックするとクリップボードにコピーされるので、NotionQuickAction の NOTION_API_TOKEN の部分に貼り付けてください。
+- 内部インテグレーションシークレットの部分にシークレットが表示されます。「表示」をクリックすると`ntn_`で始まる文字列が表示されます(以前は`secret_`でしたが、最近変更になっています)。右にあるコピーをクリックするとクリップボードにコピーされるので、NotionQuickAction の NOTION_API_TOKEN の部分に貼り付けてください。
 ![シークレット](secret-J.png)
 
 ## インテグレーションの許可
 
-次に登録するデータベースを開きます。リンクドデータベースがある場合には、`右上矢印 + データベース名` の部分をクリックすればデータベースのページが単体で開きます。インラインのデータベースの場合には、`...` から「ページとして開く」をクリックして開きます。
-![ページとして開く](openAsPage-J.png)
+次に利用するデータベースを開きます。リンクドビューの場合には、ビューのタイトルの場所で右ボタンメニューを表示し、「ソースデータベースを開く」としてデータベース本体を開きます。
+![ページとして開く](OpenSourceDatabase-J.png)
 
-このデータベースを API からアクセスできるように、右上の`共有`で開くダイアログにて先ほど作成したインテグレーションを招待します。
-追加ができるように編集権限を与えてください。
+このデータベースを API からアクセスできるように、右上の「…」から「接続」を選び、インテグレーションキーを選択します。
 
-![ShareIntegration](ShareForIntegration-J.png)
-
-## データベース id の取得
-
-最後に DATABASE_ID を取得します。許可したデータベースをページで表示した状態で、メニューから「リンクをコピー」をクリックします。
-
-![リンクをコピー](CopyLink-J.png)
-
-コピーしたリンクは以下の形式になっています。この 32 桁の XXXX... の部分がデータベース ID になります。この部分だけを取り出して、ワークシートの DATABASE_ID に設定してください。
-
-```text
-https://www.notion.so/hkob/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX?v=YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
-```
+![接続](Connect-J.png)
 
 ## 使い方
 
@@ -101,9 +84,11 @@ Notion アプリで表示したい人は OPEN_BY_APP を true に、ブラウザ
 
 ![movie](NotionCodeBlockQuickAction.gif)
 
-- [blog in Japanese](https://hkob.hatenablog.com/entry/2022/01/10/133000)
+- [blog in Japanese](https://hkob.hatenablog.com/entry/2024/12/16/0500000)
 
 ## 更新履歴
 
+- Ver. 1.1
+  - Database の query を search end point に変更
 - Ver. 1.0
   - 最初のリリース
